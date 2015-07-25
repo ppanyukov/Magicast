@@ -21,54 +21,36 @@
 
   "frameworks": {
     "net20": {
-
     },
 
     "net35": {
-
     },
 
-
     "net40": {
-
     },
 
     "net45": {
-
-    },
-
-    "net451": {
-
-    },
-
-    "net452": {
     },
 
     "net46": {
     },
 
     "dnx451": {
-      "dependencies": {
-      }
     },
 
     "dnxcore50": {
       "dependencies": {
-        "System.Collections": "4.0.10-beta-23019",
-        "System.Linq": "4.0.0-beta-23019",
-        "System.Threading": "4.0.10-beta-23019",
-        "System.Runtime": "4.0.10-beta-23019",
-        "Microsoft.CSharp": "4.0.0-beta-23019"
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Reflection": "4.0.10-beta-*",
+        "System.Reflection.Emit.Lightweight": "4.0.0-beta-*"
       }
     },
 
     "dotnet": {
       "dependencies": {
-        "System.Collections": "4.0.10-beta-23019",
-        "System.Linq": "4.0.0-beta-23019",
-        "System.Threading": "4.0.10-beta-23019",
-        "System.Runtime": "4.0.10-beta-23019",
-        "Microsoft.CSharp": "4.0.0-beta-23019"
+        "System.Runtime": "4.0.20-beta-*",
+        "System.Reflection": "4.0.10-beta-*",
+        "System.Reflection.Emit.Lightweight": "4.0.0-beta-*"
       }
     }
   }
