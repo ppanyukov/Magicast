@@ -1,0 +1,75 @@
+﻿{
+  "version": "1.0.0-alpha-1",
+  "description": "Automagically cast anything to anything in .NET.",
+  "authors": [ "ppanyukov" ],
+  "tags": [ "magic power control awesome CLR 'type conversion'" ],
+  "projectUrl": "https://github.com/ppanyukov/Magicast",
+  "licenseUrl": "",
+
+  "dependencies": {
+
+  },
+
+  "comments": [
+    {
+      "frameworks": [
+        "Aim to support all frameworks",
+        "dotnet is .NET 5.0. Not sure what and how about it."
+      ]
+    }
+  ],
+
+  "frameworks": {
+    "net20": {
+
+    },
+
+    "net35": {
+
+    },
+
+
+    "net40": {
+
+    },
+
+    "net45": {
+
+    },
+
+    "net451": {
+
+    },
+
+    "net452": {
+    },
+
+    "net46": {
+    },
+
+    "dnx451": {
+      "dependencies": {
+      }
+    },
+
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-23019",
+        "System.Linq": "4.0.0-beta-23019",
+        "System.Threading": "4.0.10-beta-23019",
+        "System.Runtime": "4.0.10-beta-23019",
+        "Microsoft.CSharp": "4.0.0-beta-23019"
+      }
+    },
+
+    "dotnet": {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-23019",
+        "System.Linq": "4.0.0-beta-23019",
+        "System.Threading": "4.0.10-beta-23019",
+        "System.Runtime": "4.0.10-beta-23019",
+        "Microsoft.CSharp": "4.0.0-beta-23019"
+      }
+    }
+  }
+}

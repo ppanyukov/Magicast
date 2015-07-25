@@ -1,0 +1,113 @@
+{
+  "version": "1.0.0-*",
+  "description": "Unit tests for Magicast",
+  "authors": [ "ppanyukov" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "dependencies": {
+  },
+
+  "commands": {
+    "test": "xunit.runner.dnx"
+  },
+
+  "frameworks": {
+    "net20": {
+      "dependencies": {
+        "xunit": "1.9.2"
+      }
+    },
+
+    "net35": {
+      "dependencies": {
+        "xunit": "1.9.2"
+      }
+    },
+
+    "net40": {
+      "dependencies": {
+        "xunit": "1.9.2"
+      }
+    },
+
+    "net45": {
+      "dependencies": {
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      },
+
+      "frameworkAssemblies": {
+        "System.Runtime": "4.0.0.0"
+      }
+    },
+
+    "net451": {
+      "dependencies": {
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      },
+
+      "frameworkAssemblies": {
+        "System.Runtime": "4.0.0.0"
+      }
+    },
+
+    "net452": {
+      "dependencies": {
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      },
+
+      "frameworkAssemblies": {
+        "System.Runtime": "4.0.0.0"
+      }
+    },
+
+    "net46": {
+      "dependencies": {
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      },
+
+      "frameworkAssemblies": {
+        "System.Runtime": "4.0.20.0"
+      }
+    },
+
+    "dnx451": {
+      "dependencies": {
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      }
+    },
+
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-23019",
+        "System.Linq": "4.0.0-beta-23019",
+        "System.Threading": "4.0.10-beta-23019",
+        "System.Runtime": "4.0.10-beta-23019",
+        "Microsoft.CSharp": "4.0.0-beta-23019",
+
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      }
+    },
+
+    "dotnet": {
+      "dependencies": {
+        "System.Collections": "4.0.10-beta-23019",
+        "System.Linq": "4.0.0-beta-23019",
+        "System.Threading": "4.0.10-beta-23019",
+        "System.Runtime": "4.0.10-beta-23019",
+        "Microsoft.CSharp": "4.0.0-beta-23019",
+
+        "xunit": "2.1.0-beta3-*",
+        "xunit.runner.dnx": "2.1.0-beta3-*"
+      }
+
+    }
+  }
+}
