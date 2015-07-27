@@ -243,6 +243,159 @@ namespace Magicast.Tests
             Assert.Equal((int)enumArray[2], intArray[2]);
         }
 
+
+        [Fact]
+        public void Array_CanCast_ClassArray_TAnotherClassArray()
+        {
+            // It does not have to be enum[] to int[] cast.
+            // Can do any array of objects into arary of other type as long as the two types are compatible.
+            var fooArray = new FooDerivedClass[]
+            {
+                new FooDerivedClass
+                {
+                    fieldBaseA = "0.fieldBaseA",
+                    fieldBaseB = "0.fieldBaseB",
+                    fieldDerivedA = "0.fieldDerivedA",
+                    fieldDerivedB = "0.fieldDerivedB",
+                },
+                new FooDerivedClass
+                {
+                    fieldBaseA = "1.fieldBaseA",
+                    fieldBaseB = "1.fieldBaseB",
+                    fieldDerivedA = "1.fieldDerivedA",
+                    fieldDerivedB = "1.fieldDerivedB",
+                },
+            };
+
+            // OK, this does not compile
+            //var barArray = (BarFlatClass[])fooArray;
+
+            // But we still can
+            var barArray = MagicWand<FooDerivedClass[], BarFlatClass[]>.Cast(fooArray);
+
+            // Everything should still work.
+            Assert.Equal(fooArray.Length, barArray.Length);
+
+            for (int i = 0; i < fooArray.Length; i++)
+            {
+                var foo = fooArray[i];
+                var bar = barArray[i];
+
+                Assert.Equal(foo.fieldBaseA, bar.fieldFlatA);
+                Assert.Equal(foo.fieldBaseB, bar.fieldFlatB);
+                Assert.Equal(foo.fieldDerivedA, bar.fieldFlatC);
+                Assert.Equal(foo.fieldDerivedB, bar.fieldFlatD);
+            }
+        }
+
+        [Fact]
+        public void List_CanCast_ClassList_TAnotherClassList()
+        {
+            // Same goes for lists
+
+            var fooArray = new List<FooDerivedClass>
+            {
+                new FooDerivedClass
+                {
+                    fieldBaseA = "0.fieldBaseA",
+                    fieldBaseB = "0.fieldBaseB",
+                    fieldDerivedA = "0.fieldDerivedA",
+                    fieldDerivedB = "0.fieldDerivedB",
+                },
+                new FooDerivedClass
+                {
+                    fieldBaseA = "1.fieldBaseA",
+                    fieldBaseB = "1.fieldBaseB",
+                    fieldDerivedA = "1.fieldDerivedA",
+                    fieldDerivedB = "1.fieldDerivedB",
+                },
+            };
+
+            // OK, this does not compile
+            //var barArray = (BarFlatClass[])fooArray;
+
+            // But we still can
+            var barArray = MagicWand<List<FooDerivedClass>, List<BarFlatClass>>.Cast(fooArray);
+
+            // Everything should still work.
+            Assert.Equal(fooArray.Count, barArray.Count);
+
+            for (int i = 0; i < fooArray.Count; i++)
+            {
+                var foo = fooArray[i];
+                var bar = barArray[i];
+
+                Assert.Equal(foo.fieldBaseA, bar.fieldFlatA);
+                Assert.Equal(foo.fieldBaseB, bar.fieldFlatB);
+                Assert.Equal(foo.fieldDerivedA, bar.fieldFlatC);
+                Assert.Equal(foo.fieldDerivedB, bar.fieldFlatD);
+            }
+        }
+
+        [Fact]
+        public void Dictionary_CanCast_ClassMap_TAnotherClassMap()
+        {
+            // Same goes for dictionaries
+
+            var fooMap = new Dictionary<string, FooDerivedClass>
+            {
+                {
+                    "key",
+                    new FooDerivedClass
+                    {
+                        fieldBaseA = "0.fieldBaseA",
+                        fieldBaseB = "0.fieldBaseB",
+                        fieldDerivedA = "0.fieldDerivedA",
+                        fieldDerivedB = "0.fieldDerivedB",
+                    }
+                },
+
+                {
+                    "key2",
+                    new FooDerivedClass
+                    {
+                        fieldBaseA = "1.fieldBaseA",
+                        fieldBaseB = "1.fieldBaseB",
+                        fieldDerivedA = "1.fieldDerivedA",
+                        fieldDerivedB = "1.fieldDerivedB",
+                    }
+                }
+            };
+
+            // But we still can
+            var barMap = MagicWand<Dictionary<string, FooDerivedClass>, Dictionary<string, BarFlatClass>>.Cast(fooMap);
+
+            // Everything should still work.
+            Assert.Equal(fooMap.Count, barMap.Count);
+
+            foreach (var kv in fooMap)
+            {
+                var foo = fooMap[kv.Key];
+                var bar = barMap[kv.Key];
+
+                Assert.Equal(foo.fieldBaseA, bar.fieldFlatA);
+                Assert.Equal(foo.fieldBaseB, bar.fieldFlatB);
+                Assert.Equal(foo.fieldDerivedA, bar.fieldFlatC);
+                Assert.Equal(foo.fieldDerivedB, bar.fieldFlatD);
+            }
+
+            // Add stuff to the new map
+            barMap.Add("key3", new BarFlatClass
+            {
+                fieldFlatA = "flatFieldA",
+                fieldFlatB = "flatFieldB",
+                fieldFlatC = "flatFieldC",
+                fieldFlatD = "flatFieldD"
+            });
+
+
+            // Use it from the old :)
+            Assert.Equal(fooMap["key3"].fieldBaseA, "flatFieldA");
+            Assert.Equal(fooMap["key3"].fieldBaseB, "flatFieldB");
+            Assert.Equal(fooMap["key3"].fieldDerivedA, "flatFieldC");
+            Assert.Equal(fooMap["key3"].fieldDerivedB, "flatFieldD");
+        }
+
         [Fact]
         public void IEnumerable_CanCast_EnumEnumerable_ToIntEnumerable_IfSourceIsArray()
         {
@@ -306,51 +459,6 @@ namespace Magicast.Tests
             yield return FooEnumBasedOnInt.ValueC;
             yield return FooEnumBasedOnInt.ValueB;
             yield return FooEnumBasedOnInt.ValueA;
-        }
-
-        [Fact]
-        public void Array_CanCast_ClassArray_TAnotherClassArray()
-        {
-            // Frequent scenario:
-            // Have array of DerivedClass[], but want to have arrays of BaseClass[]
-
-            var fooArray = new FooDerivedClass[]
-            {
-                new FooDerivedClass
-                {
-                    fieldBaseA = "0.fieldBaseA",
-                    fieldBaseB = "0.fieldBaseB",
-                    fieldDerivedA = "0.fieldDerivedA",
-                    fieldDerivedB = "0.fieldDerivedB",
-                },
-                new FooDerivedClass
-                {
-                    fieldBaseA = "1.fieldBaseA",
-                    fieldBaseB = "1.fieldBaseB",
-                    fieldDerivedA = "1.fieldDerivedA",
-                    fieldDerivedB = "1.fieldDerivedB",
-                },
-            };
-
-            // OK, this does not compile
-            //var barArray = (BarFlatClass[])fooArray;
-
-            // But we still can
-            var barArray = MagicWand<FooDerivedClass[], BarFlatClass[]>.Cast(fooArray);
-
-            // Everything should still work.
-            Assert.Equal(fooArray.Length, barArray.Length);
-
-            for (int i = 0; i < fooArray.Length; i++)
-            {
-                var foo = fooArray[i];
-                var bar = barArray[i];
-
-                Assert.Equal(foo.fieldBaseA, bar.fieldFlatA);
-                Assert.Equal(foo.fieldBaseB, bar.fieldFlatB);
-                Assert.Equal(foo.fieldDerivedA, bar.fieldFlatC);
-                Assert.Equal(foo.fieldDerivedB, bar.fieldFlatD);
-            }
         }
 
         //  GC-related assurance
