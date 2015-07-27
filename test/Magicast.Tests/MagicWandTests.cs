@@ -38,7 +38,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CannnotCastStructToClassInANaiveWay()
+        public void CastStructToClass_Should_Throw_InvalidOperationException()
         {
             // TODO: check that source and target are of same kind (value type / class) and throw exception there?
             //
@@ -54,10 +54,8 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CannotCastClassToStructInNaiveWay()
+        public void CastClassToStruct_Should_Throw_InvalidOperationException()
         {
-            // TODO: check that source and target are of same kind (value type / class) and throw exception there?
-            //
             // Structs and classes have different layout in memory.
             // So a naive cast will likely blow up. We don't allow this and throw.
             var foo = new FooClass
