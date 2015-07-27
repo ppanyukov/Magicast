@@ -1,6 +1,6 @@
 ﻿{
   "version": "1.0.0-alpha-1",
-  "description": "Automagically cast anything to anything in .NET. Well almost :)",
+  "description": "Automagically cast anything to anything in .NET. Well almost :). \nCheck out project site for use cases, examples and docs.",
   "authors": [ "ppanyukov" ],
   "tags": [ "magic power control awesome hackery CLR \"type conversion\"" ],
   "projectUrl": "https://github.com/ppanyukov/Magicast",
