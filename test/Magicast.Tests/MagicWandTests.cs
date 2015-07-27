@@ -69,31 +69,30 @@ namespace Magicast.Tests
             Assert.Throws<InvalidOperationException>(() => MagicWand<FooClass, BarStruct>.Cast(foo));
         }
 
-    }
 
+        // Types under test
+        public struct FooStruct
+        {
+            public string fieldA;
+            public string fieldB;
+        }
 
-    // Types under test
-    public struct FooStruct
-    {
-        public string fieldA;
-        public string fieldB;
-    }
+        public struct BarStruct
+        {
+            public string fieldC;
+            public string fieldD;
+        }
 
-    public struct BarStruct
-    {
-        public string fieldC;
-        public string fieldD;
-    }
+        public class FooClass
+        {
+            public string fieldA;
+            public string fieldB;
+        }
 
-    public class FooClass
-    {
-        public string fieldA;
-        public string fieldB;
-    }
-
-    public class BarClass
-    {
-        public string fieldC;
-        public string fieldD;
+        public class BarClass
+        {
+            public string fieldC;
+            public string fieldD;
+        }
     }
 }
