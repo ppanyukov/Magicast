@@ -140,6 +140,29 @@ namespace Magicast.Tests
             Assert.Equal(barFlat.fieldFlatD, fooHierarchy.fieldDerivedB);
         }
 
+        [Fact]
+        public void CastingOnlyInvolvesData_And_Thus_OpensAnInteresting_PolymorphicBehaviours()
+        {
+            // Casting only applies to *data*. The methods are not affected.
+            // This can be a disappointing thing or it can be a good thing.
+            //
+            // So for example, here we can change Cat into Dog :)
+
+            var cat = new Cat
+            {
+                name = "My fluffy Cat"
+            };
+
+            // Turn this cat into Dog as far as behaviour is concerned :)
+            var dog = MagicWand<Cat, Dog>.Cast(cat);
+
+            // The dog still has the cat's name
+            Assert.Equal(cat.name, dog.name);
+
+            // But it now behaves like a dog :)
+            Assert.Equal(Dog.DogSound, dog.SaySometing());
+        }
+
         // Types under test
 
         // Simple structs with same structure
@@ -191,6 +214,37 @@ namespace Magicast.Tests
             public string fieldFlatB;
             public string fieldFlatC;
             public string fieldFlatD;
+        }
+
+
+        // Types for changing behaviour -- the new kind of polymorphism
+
+        // Here we have cat with data fields like name and behaviour.
+        public class Cat
+        {
+            public const string CatSound = "Meauwuw";
+
+            public string name;
+
+            public string SaySometing()
+            {
+                return CatSound;
+            }
+        }
+
+        // When we cast to Cat to Dog, we will acquire data fields (name)
+        // but when we call SaySomething it will be Dog's behaviour now.
+        // How cool is that.
+        public class Dog
+        {
+            public const string DogSound = "Woof Woof";
+
+            public string name;
+
+            public string SaySometing()
+            {
+                return DogSound;
+            }
         }
     }
 }
