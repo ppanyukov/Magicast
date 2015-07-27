@@ -407,6 +407,28 @@ namespace Magicast.Tests
 
         }
 
+        [Fact]
+        public void FlatToEmbeedded_CanCast()
+        {
+            // Convert flat records into structures with emdedded types.
+            var foo = new FooFlatRecord
+            {
+                fieldA = "a",
+                fieldB = "b",
+                fieldC = "c",
+                fieldD = "d",
+                fieldE = "e",
+                fieldF = "f",
+            };
+
+            var bar = VeryUnsafeCast<FooFlatRecord, FooFlatEmbedded>.Cast(foo);
+
+            Assert.Equal(foo.fieldA, bar.embedded1.fieldA);
+            Assert.Equal(foo.fieldB, bar.embedded1.fieldB);
+            Assert.Equal(foo.fieldC, bar.embedded2.fieldC);
+            Assert.Equal(foo.fieldD, bar.embedded2.fieldD);
+        }
+
         //  GC-related assurance
         [Fact]
         public void GC_Casts_SurviceGC()
@@ -627,5 +649,35 @@ namespace Magicast.Tests
             public string AutoPropB { get; }
         }
 
+
+        // Types to test flat to embedded scenario
+        public class FooFlatRecord
+        {
+            public string fieldA;
+            public string fieldB;
+            public string fieldC;
+            public string fieldD;
+            public string fieldE;
+            public string fieldF;
+        }
+
+        public class FooFlatEmbedded
+        {
+            public Embedded1 embedded1;
+            public Embedded2 embedded2;
+
+            // These need to be structs
+            public struct Embedded1
+            {
+                public string fieldA;
+                public string fieldB;
+            }
+
+            public struct Embedded2
+            {
+                public string fieldC;
+                public string fieldD;
+            }
+        }
     }
 }
