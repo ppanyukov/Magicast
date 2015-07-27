@@ -40,7 +40,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void StructToClass_CannotCast_Should_Throw_InvalidOperationException()
+        public void StructToClass_CannotCast_Should_Throw_InvalidCastException()
         {
             // TODO: check that source and target are of same kind (value type / class) and throw exception there?
             //
@@ -52,11 +52,11 @@ namespace Magicast.Tests
                 fieldB = "FooStruct.FieldB"
             };
 
-            Assert.Throws<InvalidOperationException>(() => VeryUnsafeCast<FooStruct, BarClass>.Cast(foo));
+            Assert.Throws<InvalidCastException>(() => VeryUnsafeCast<FooStruct, BarClass>.Cast(foo));
         }
 
         [Fact]
-        public void ClassToStruct_CannotCast_Should_Throw_InvalidOperationException()
+        public void ClassToStruct_CannotCast_Should_Throw_InvalidCastException()
         {
             // Structs and classes have different layout in memory.
             // So a naive cast will likely blow up. We don't allow this and throw.
@@ -66,7 +66,7 @@ namespace Magicast.Tests
                 fieldB = "FooClass.FieldB"
             };
 
-            Assert.Throws<InvalidOperationException>(() => VeryUnsafeCast<FooClass, BarStruct>.Cast(foo));
+            Assert.Throws<InvalidCastException>(() => VeryUnsafeCast<FooClass, BarStruct>.Cast(foo));
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Magicast.Tests
             // Casting from an interface is even more dangerous because we have no
             // clue what the source memroy layout is. Hence not allowed.
             IList<int> foo = new List<int>();
-            Assert.Throws<InvalidOperationException>(() => VeryUnsafeCast<IList<int>, IList<string>>.Cast(foo));
+            Assert.Throws<InvalidCastException>(() => VeryUnsafeCast<IList<int>, IList<string>>.Cast(foo));
         }
 
         [Fact]

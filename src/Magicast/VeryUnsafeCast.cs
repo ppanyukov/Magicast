@@ -110,7 +110,7 @@ namespace Magicast
 
         private static TTarget ThrowFuncBothMustBeStructOrClass(TSource obj)
         {
-            throw new InvalidOperationException(
+            throw new InvalidCastException(
                 "Even though it's magic, we can only cast structs to structs and classes to classes and " +
                 "also in cases when target is directly assignable from the source.");
         }
