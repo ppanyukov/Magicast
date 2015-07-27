@@ -3,7 +3,6 @@
 namespace Magicast.Tests
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -266,7 +265,6 @@ namespace Magicast.Tests
             Assert.Equal(default(string), foo.fieldC);
         }
 
-
         // Arrays and enumerables.
         // Probably the coolest feature is you can cast arrays and IEnumerable<T> to anything too.
         [Fact]
@@ -300,7 +298,6 @@ namespace Magicast.Tests
             Assert.Equal((int)enumArray[1], intArray[1]);
             Assert.Equal((int)enumArray[2], intArray[2]);
         }
-
 
         [Fact]
         public void Array_CanCast_ClassArray_TAnotherClassArray()

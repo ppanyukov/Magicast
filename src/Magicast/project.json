@@ -1,8 +1,8 @@
 ﻿{
   "version": "1.0.0-alpha-1",
-  "description": "Automagically cast anything to anything in .NET.",
+  "description": "Automagically cast anything to anything in .NET. Well almost :)",
   "authors": [ "ppanyukov" ],
-  "tags": [ "magic power control awesome CLR 'type conversion'" ],
+  "tags": [ "magic power control awesome hackery CLR \"type conversion\"" ],
   "projectUrl": "https://github.com/ppanyukov/Magicast",
   "licenseUrl": "",
 

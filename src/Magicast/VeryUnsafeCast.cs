@@ -5,14 +5,13 @@ namespace Magicast
     using System;
     using System.Reflection;
     using System.Reflection.Emit;
-    using System.Runtime.CompilerServices;
 
     /// <summary>
     /// Casts from anything to anything in a VERY DANGEROUS (but fun) way. Use responsibly.
     /// </summary>
     /// <typeparam name="TSource">The type to cast from.</typeparam>
     /// <typeparam name="TTarget">The type to cast to.</typeparam>
-    internal static class VeryUnsafeCast<TSource, TTarget>
+    public static class VeryUnsafeCast<TSource, TTarget>
     {
         // Note on static members. Because this is a generic, the static members will be generated
         // for each combination of type parameters. This is the reason why we can generate the
