@@ -3,6 +3,7 @@
 namespace Magicast.Tests
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -243,17 +244,17 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void IEnumerable_CanCast_EnumEnumerable_ToIntEnumerable()
+        public void IEnumerable_CanCast_EnumEnumerable_ToIntEnumerable_IfSourceIsArray()
         {
             // This is a also a ligitimate use case where we have something like this:
             //   Source: IEnumerable<enum>
             //   Target: IEnumerable<int>
-            var enumEnum = new FooEnumBasedOnInt[]
+            var enumArray = new FooEnumBasedOnInt[]
             {
                 FooEnumBasedOnInt.ValueC,
                 FooEnumBasedOnInt.ValueB,
                 FooEnumBasedOnInt.ValueA,
-            }.AsEnumerable();
+            };
 
             // This does not compile
             //var intArray = (IEnumerable<int>)enumEnum;
@@ -261,16 +262,51 @@ namespace Magicast.Tests
             // This will work, but:
             //  - will ultimately iterate over the source IEnumerable in order to cast
             //
-            IEnumerable<int> intEnumerable = enumEnum.Cast<int>();
+            //IEnumerable<int> intEnumerable = enumEnum.Cast<int>();
+
 
             // We can do better. In this case the enum IEnumerable *is* int IEnumerable.
+            // This will work if the original array was made into IEnumerable with AsEnumerable();
+            var enumEnum = enumArray.AsEnumerable();
             IEnumerable<int> intEnum = MagicWand<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
 
-            Assert.Equal((int)enumEnum.Skip(0).First(),intEnum.Skip(0).First());
-            Assert.Equal((int)enumEnum.Skip(1).First(),intEnum.Skip(1).First());
-            Assert.Equal((int)enumEnum.Skip(2).First(),intEnum.Skip(2).First());
+            Assert.Equal((int)enumEnum.Skip(0).First(), intEnum.Skip(0).First());
+            Assert.Equal((int)enumEnum.Skip(1).First(), intEnum.Skip(1).First());
+            Assert.Equal((int)enumEnum.Skip(2).First(), intEnum.Skip(2).First());
         }
 
+        [Fact]
+        public void IEnumerable_But_CannnotCast_EnumEnumerable_ToIntEnumerable_IfSource_Is_EnumProducedWithYield()
+        {
+            // In case where IEnumerable is produced with yield, the cast doesn't work.
+            // Actually it does, but calling any methods on it leads to bad things.
+            var enumEnum = MakeFooEnumWithYield();    // Make sure to generate IEnumerable with yield, not ToEnumerable()!
+
+            // This will compile but will fail at runtime
+            //IEnumerable<int> intEnum = ((IEnumerable<int>)((IEnumerable)enumEnum));
+
+            // OK at this point
+            IEnumerable<int> intEnum = MagicWand<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
+
+            // But using will blow up with EntryPointNotFoundException when trying to use it.
+            try
+            {
+                intEnum.ToArray();
+                Assert.False(false, "Must not reach this point.");
+            }
+            catch
+            {
+            }
+        }
+
+        private static IEnumerable<FooEnumBasedOnInt> MakeFooEnumWithYield()
+        {
+            // The array.ToEnumerable is not quite the same thing as producing IEnumerable
+            // with yield return. We really want to test with yeield.
+            yield return FooEnumBasedOnInt.ValueC;
+            yield return FooEnumBasedOnInt.ValueB;
+            yield return FooEnumBasedOnInt.ValueA;
+        }
 
         [Fact]
         public void Array_CanCast_ClassArray_TAnotherClassArray()
