@@ -163,6 +163,48 @@ namespace Magicast.Tests
             Assert.Equal(Dog.DogSound, dog.SaySometing());
         }
 
+        [Fact]
+        public void CanCastToTypeWithFewerFields_AndExtraFieldsJustDropOff()
+        {
+            // The source and target types don't have to have eactly same number of fields.
+            // For example here the target will have fewer fieds than the source and that's fine.
+            var foo = new FooClassWithThreeFields()
+            {
+                fieldA = "foo.FieldA",
+                fieldB = "foo.FieldA",
+                fieldC = "foo.FieldC",
+            };
+
+            var bar = MagicWand<FooClassWithThreeFields, BarClassWithOneField>.Cast(foo);
+
+            // The extra fields just drop off.
+            Assert.Equal(foo.fieldA, bar.fieldA);
+        }
+
+        [Fact(Skip = "This will lead to a crash so not included in the test run.")]
+        public void BUT_CannotCastToTypeWithMoreFields_AsAccessingThoseExtraFields_WillLikelyLeadToACrash()
+        {
+            // As these casts are just a bunch of memory tricks, 
+            // we can't expect to cast to a type with more fields and be able
+            // to access those extra fields -- those memory locations may not be there at all.
+            //
+            // TODO: Can we do anything to sanity check this in the MagicCast like we do with structs and classes?
+            var bar = new BarClassWithOneField
+            {
+                fieldA = "bar.fieldA"
+            };
+
+            var foo = MagicWand<BarClassWithOneField, FooClassWithThreeFields>.Cast(bar);
+
+            // The field that was there is still here
+            Assert.Equal(bar.fieldA, foo.fieldA);
+
+            // Getting to any of these extra fields is likely to lead to a big boom.
+            // Undefined behaviour let's say.
+            Assert.Equal(default(string), foo.fieldB);
+            Assert.Equal(default(string), foo.fieldC);
+        }
+
         // Types under test
 
         // Simple structs with same structure
@@ -245,6 +287,20 @@ namespace Magicast.Tests
             {
                 return DogSound;
             }
+        }
+
+
+        // Types with different number of fields
+        public class FooClassWithThreeFields
+        {
+            public string fieldA;
+            public string fieldB;
+            public string fieldC;
+        }
+
+        public class BarClassWithOneField
+        {
+            public string fieldA;
         }
     }
 }
