@@ -53,19 +53,46 @@ namespace Magicast
             //      Type.GetTypeInfo() is not available.
 #if NET40
             var isSourceClass = typeof(TSource).IsClass;
+            var isSourceStruct = typeof(TSource).IsValueType;
+
             var isTargetClass = typeof(TTarget).IsClass;
+            var isTargetStruct = typeof(TTarget).IsValueType;
+
+            var isTargetAssignable = typeof(TTarget).IsAssignableFrom(typeof(TSource));
+
             var assembly = Assembly.GetExecutingAssembly();
 #else
             var isSourceClass = typeof(TSource).GetTypeInfo().IsClass;
+            var isSourceStruct = typeof(TSource).GetTypeInfo().IsValueType;
+
             var isTargetClass = typeof(TTarget).GetTypeInfo().IsClass;
+            var isTargetStruct = typeof(TTarget).GetTypeInfo().IsValueType;
+
+            var isTargetAssignable = typeof(TTarget).GetTypeInfo().IsAssignableFrom(typeof(TSource).GetTypeInfo());
+
             var assembly = typeof(VeryUnsafeCast<TSource, TTarget>).GetTypeInfo().Assembly;
 #endif
             // Both source and target need to be either class or struct.
             // Otherwise things will crash because the two things are not compatible in memory layout.
-            var isOk = isSourceClass == isTargetClass;
+            //
+            // Equally, we cannot allow the source type to be an interface because it
+            // becomes even more insanely dangerous.
+            // This cast operates on the premise that we know the source and the target
+            // memory layout, which we can't do if the source is the interace.
+            //
+            // The cast to an interface doesn't make sense either because calls onto
+            // interface methods will not work anyway.
+            //
+            // The only exception for mix-and-match if the target is directly assignable from the source.
+            var isOk =
+                isTargetAssignable
+                ||
+                isSourceClass && isTargetClass
+                ||
+                isSourceStruct && isTargetStruct;
             if (!isOk)
             {
-                return ThrowFunc;
+                return ThrowFuncBothMustBeStructOrClass;
             }
 
             var someMethod = new DynamicMethod(
@@ -81,11 +108,11 @@ namespace Magicast
             return (Func<TSource, TTarget>)someMethod.CreateDelegate(typeof(Func<TSource, TTarget>));
         }
 
-        private static TTarget ThrowFunc(TSource obj)
+        private static TTarget ThrowFuncBothMustBeStructOrClass(TSource obj)
         {
             throw new InvalidOperationException(
-                "Even though it's magic, we can't cast structs to classes and classes to structs. " +
-                "Because things will really crash if you do.");
+                "Even though it's magic, we can only cast structs to structs and classes to classes and " +
+                "also in cases when target is directly assignable from the source.");
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace Magicast.Tests
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -11,7 +12,7 @@ namespace Magicast.Tests
     public sealed class VeryUnsafeCastTests
     {
         [Fact]
-        public void CanCastStructToStruct()
+        public void StructToStruct_CanCast()
         {
             var foo = new FooStruct
             {
@@ -25,7 +26,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CanCastClassToClass()
+        public void ClassToClass_CanCast()
         {
             var foo = new FooClass
             {
@@ -39,7 +40,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CastStructToClass_Should_Throw_InvalidOperationException()
+        public void StructToClass_CannotCast_Should_Throw_InvalidOperationException()
         {
             // TODO: check that source and target are of same kind (value type / class) and throw exception there?
             //
@@ -55,7 +56,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CastClassToStruct_Should_Throw_InvalidOperationException()
+        public void ClassToStruct_CannotCast_Should_Throw_InvalidOperationException()
         {
             // Structs and classes have different layout in memory.
             // So a naive cast will likely blow up. We don't allow this and throw.
@@ -69,7 +70,65 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CanCastClassHierarchyToFlatClass()
+        public void Interfaces_CannotCast_FromInterface_ToIncompatibleInterface()
+        {
+            // Casting from an interface is even more dangerous because we have no
+            // clue what the source memroy layout is. Hence not allowed.
+            IList<int> foo = new List<int>();
+            Assert.Throws<InvalidOperationException>(() => VeryUnsafeCast<IList<int>, IList<string>>.Cast(foo));
+        }
+
+        [Fact]
+        public void Interfaces_CanCast_FromClass_ToInterface_IfTargetIsAsignable_CanCast()
+        {
+            // Casting from an interface is even more dangerous because we have no
+            // clue what the source memroy layout is. Hence not allowed.
+            List<int> foo = new List<int>() {0, 1, 2, 3};
+            var barIList = VeryUnsafeCast<List<int>, IList<int>>.Cast(foo);
+            var barIEnumerable = VeryUnsafeCast<List<int>, IEnumerable<int>>.Cast(foo);
+
+            Assert.Equal(foo.Count, barIList.Count);
+            Assert.Equal(foo.Count, barIEnumerable.Count());
+        }
+
+        [Fact]
+        public void Interfaces_CanCast_FromInterface_ToInterface_IfTargetIsAssignable()
+        {
+            // Casting from an interface is even more dangerous because we have no
+            // clue what the source memroy layout is. Hence not allowed.
+            IList<int> foo = new List<int> { 0, 1, 2, 3 };
+            var barIList = VeryUnsafeCast<IList<int>, IList<int>>.Cast(foo);
+            var barIEnumerable = VeryUnsafeCast<IEnumerable<int>, IEnumerable<int>>.Cast(foo);
+
+            Assert.Equal(foo.Count, barIList.Count);
+            Assert.Equal(foo.Count, barIEnumerable.Count());
+        }
+
+        [Fact]
+        public void Interfaces_CanCast_FromIEnumerableDerived_ToIEnumerableBase()
+        {
+            IEnumerable<FooDerivedClass> fooDerivedEnum = new List<FooDerivedClass>
+            {
+                new FooDerivedClass
+                {
+                    fieldBaseA = "a",
+                    fieldBaseB = "b",
+                    fieldDerivedA = "c",
+                    fieldDerivedB = "d"
+                }
+            };
+
+            // This works
+            IEnumerable<FooBaseClass> fooBaseEnum = fooDerivedEnum;
+
+            // This should also work right?
+            var ourCast = VeryUnsafeCast<IEnumerable<FooDerivedClass>, IEnumerable<FooBaseClass>>.Cast(fooDerivedEnum);
+            Assert.Equal(fooDerivedEnum.First().fieldBaseA, ourCast.First().fieldBaseA);
+            Assert.Equal(fooDerivedEnum.First().fieldBaseB, ourCast.First().fieldBaseB);
+        }
+
+        [Fact]
+        public void CalssHierarchy_CanCast_ToFlatClass()
         {
             // Having the source class FooDerivedClass which is part of the hierarchy:
             //    object 
@@ -103,7 +162,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CanCastFlatClassToClassHierarchy()
+        public void FlatClass_CanCast_To_ClassHierarchy()
         {
             // Just like we can cast source type with a class hierarchy to flat type,
             // we can do the same the other way around:
@@ -143,7 +202,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CastingOnlyInvolvesData_And_Thus_OpensAnInteresting_PolymorphicBehaviours()
+        public void Polymorphysm_CastingOnlyInvolvesData_And_Thus_OpensAnInteresting_PolymorphicBehaviours()
         {
             // Casting only applies to *data*. The methods are not affected.
             // This can be a disappointing thing or it can be a good thing.
@@ -166,7 +225,7 @@ namespace Magicast.Tests
         }
 
         [Fact]
-        public void CanCastToTypeWithFewerFields_AndExtraFieldsJustDropOff()
+        public void ExtraFields_CanCast_ToTypeWithFewerFields_AndExtraFieldsJustDropOff()
         {
             // The source and target types don't have to have eactly same number of fields.
             // For example here the target will have fewer fieds than the source and that's fine.
@@ -184,7 +243,7 @@ namespace Magicast.Tests
         }
 
         [Fact(Skip = "This will lead to a crash so not included in the test run.")]
-        public void BUT_CannotCastToTypeWithMoreFields_AsAccessingThoseExtraFields_WillLikelyLeadToACrash()
+        public void ExtraFields_CannotCast_ToTypeWithMoreFields_AsAccessingThoseExtraFields_WillLikelyLeadToACrash()
         {
             // As these casts are just a bunch of memory tricks, 
             // we can't expect to cast to a type with more fields and be able
@@ -395,74 +454,9 @@ namespace Magicast.Tests
             Assert.Equal(fooMap["key3"].fieldDerivedB, "flatFieldD");
         }
 
-        [Fact]
-        public void IEnumerable_CanCast_EnumEnumerable_ToIntEnumerable_IfSourceIsArray()
-        {
-            // This is a also a ligitimate use case where we have something like this:
-            //   Source: IEnumerable<enum>
-            //   Target: IEnumerable<int>
-            var enumArray = new FooEnumBasedOnInt[]
-            {
-                FooEnumBasedOnInt.ValueC,
-                FooEnumBasedOnInt.ValueB,
-                FooEnumBasedOnInt.ValueA,
-            };
-
-            // This does not compile
-            //var intArray = (IEnumerable<int>)enumEnum;
-
-            // This will work, but:
-            //  - will ultimately iterate over the source IEnumerable in order to cast
-            //
-            //IEnumerable<int> intEnumerable = enumEnum.Cast<int>();
-
-
-            // We can do better. In this case the enum IEnumerable *is* int IEnumerable.
-            // This will work if the original array was made into IEnumerable with AsEnumerable();
-            var enumEnum = enumArray.AsEnumerable();
-            IEnumerable<int> intEnum = VeryUnsafeCast<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
-
-            Assert.Equal((int)enumEnum.Skip(0).First(), intEnum.Skip(0).First());
-            Assert.Equal((int)enumEnum.Skip(1).First(), intEnum.Skip(1).First());
-            Assert.Equal((int)enumEnum.Skip(2).First(), intEnum.Skip(2).First());
-        }
-
-        [Fact]
-        public void IEnumerable_But_CannnotCast_EnumEnumerable_ToIntEnumerable_IfSource_Is_EnumProducedWithYield()
-        {
-            // In case where IEnumerable is produced with yield, the cast doesn't work.
-            // Actually it does, but calling any methods on it leads to bad things.
-            var enumEnum = MakeFooEnumWithYield();    // Make sure to generate IEnumerable with yield, not ToEnumerable()!
-
-            // This will compile but will fail at runtime
-            //IEnumerable<int> intEnum = ((IEnumerable<int>)((IEnumerable)enumEnum));
-
-            // OK at this point
-            IEnumerable<int> intEnum = VeryUnsafeCast<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
-
-            // But using will blow up with EntryPointNotFoundException when trying to use it.
-            try
-            {
-                intEnum.ToArray();
-                Assert.False(false, "Must not reach this point.");
-            }
-            catch
-            {
-            }
-        }
-
-        private static IEnumerable<FooEnumBasedOnInt> MakeFooEnumWithYield()
-        {
-            // The array.ToEnumerable is not quite the same thing as producing IEnumerable
-            // with yield return. We really want to test with yeield.
-            yield return FooEnumBasedOnInt.ValueC;
-            yield return FooEnumBasedOnInt.ValueB;
-            yield return FooEnumBasedOnInt.ValueA;
-        }
-
         //  GC-related assurance
         [Fact]
-        public void Casts_SurviceGC()
+        public void GC_Casts_SurviceGC()
         {
             // When we cast from A to B using our magic code, everyting still works for
             // legitimate cases even after GC has kicked in and collected garbage.
