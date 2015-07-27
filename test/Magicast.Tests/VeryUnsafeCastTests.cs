@@ -3,13 +3,12 @@
 namespace Magicast.Tests
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
     using Xunit;
 
-    public sealed class MagicWandTests
+    public sealed class VeryUnsafeCastTests
     {
         [Fact]
         public void CanCastStructToStruct()
@@ -20,7 +19,7 @@ namespace Magicast.Tests
                 fieldB = "FooStruct.FieldB"
             };
 
-            var bar = MagicWand<FooStruct, BarStruct>.Cast(foo);
+            var bar = VeryUnsafeCast<FooStruct, BarStruct>.Cast(foo);
             Assert.Equal(bar.fieldC, foo.fieldA);
             Assert.Equal(bar.fieldD, foo.fieldB);
         }
@@ -34,7 +33,7 @@ namespace Magicast.Tests
                 fieldB = "FooClass.fieldB"
             };
 
-            var bar = MagicWand<FooClass, BarClass>.Cast(foo);
+            var bar = VeryUnsafeCast<FooClass, BarClass>.Cast(foo);
             Assert.Equal(bar.fieldC, foo.fieldA);
             Assert.Equal(bar.fieldD, foo.fieldB);
         }
@@ -52,7 +51,7 @@ namespace Magicast.Tests
                 fieldB = "FooStruct.FieldB"
             };
 
-            Assert.Throws<InvalidOperationException>(() => MagicWand<FooStruct, BarClass>.Cast(foo));
+            Assert.Throws<InvalidOperationException>(() => VeryUnsafeCast<FooStruct, BarClass>.Cast(foo));
         }
 
         [Fact]
@@ -66,7 +65,7 @@ namespace Magicast.Tests
                 fieldB = "FooClass.FieldB"
             };
 
-            Assert.Throws<InvalidOperationException>(() => MagicWand<FooClass, BarStruct>.Cast(foo));
+            Assert.Throws<InvalidOperationException>(() => VeryUnsafeCast<FooClass, BarStruct>.Cast(foo));
         }
 
         [Fact]
@@ -96,7 +95,7 @@ namespace Magicast.Tests
                 fieldDerivedB = "fieldDerivedB"
             };
 
-            var bar = MagicWand<FooDerivedClass, BarFlatClass>.Cast(fooDerived);
+            var bar = VeryUnsafeCast<FooDerivedClass, BarFlatClass>.Cast(fooDerived);
             Assert.Equal(fooDerived.fieldBaseA, bar.fieldFlatA);
             Assert.Equal(fooDerived.fieldBaseB, bar.fieldFlatB);
             Assert.Equal(fooDerived.fieldDerivedA, bar.fieldFlatC);
@@ -136,7 +135,7 @@ namespace Magicast.Tests
                 fieldFlatD = "fieldBaseD",
             };
 
-            var fooHierarchy = MagicWand<BarFlatClass, FooDerivedClass>.Cast(barFlat);
+            var fooHierarchy = VeryUnsafeCast<BarFlatClass, FooDerivedClass>.Cast(barFlat);
             Assert.Equal(barFlat.fieldFlatA, fooHierarchy.fieldBaseA);
             Assert.Equal(barFlat.fieldFlatB, fooHierarchy.fieldBaseB);
             Assert.Equal(barFlat.fieldFlatC, fooHierarchy.fieldDerivedA);
@@ -157,7 +156,7 @@ namespace Magicast.Tests
             };
 
             // Turn this cat into Dog as far as behaviour is concerned :)
-            var dog = MagicWand<Cat, Dog>.Cast(cat);
+            var dog = VeryUnsafeCast<Cat, Dog>.Cast(cat);
 
             // The dog still has the cat's name
             Assert.Equal(cat.name, dog.name);
@@ -178,7 +177,7 @@ namespace Magicast.Tests
                 fieldC = "foo.FieldC",
             };
 
-            var bar = MagicWand<FooClassWithThreeFields, BarClassWithOneField>.Cast(foo);
+            var bar = VeryUnsafeCast<FooClassWithThreeFields, BarClassWithOneField>.Cast(foo);
 
             // The extra fields just drop off.
             Assert.Equal(foo.fieldA, bar.fieldA);
@@ -197,7 +196,7 @@ namespace Magicast.Tests
                 fieldA = "bar.fieldA"
             };
 
-            var foo = MagicWand<BarClassWithOneField, FooClassWithThreeFields>.Cast(bar);
+            var foo = VeryUnsafeCast<BarClassWithOneField, FooClassWithThreeFields>.Cast(bar);
 
             // The field that was there is still here
             Assert.Equal(bar.fieldA, foo.fieldA);
@@ -236,7 +235,7 @@ namespace Magicast.Tests
             //int[] intArray = enumArray.Cast<int>().ToArray();
 
             // We can do better. In this case the enum array *is* int array.
-            int[] intArray = MagicWand<FooEnumBasedOnInt[], int[]>.Cast(enumArray);
+            int[] intArray = VeryUnsafeCast<FooEnumBasedOnInt[], int[]>.Cast(enumArray);
 
             Assert.Equal((int)enumArray[0], intArray[0]);
             Assert.Equal((int)enumArray[1], intArray[1]);
@@ -271,7 +270,7 @@ namespace Magicast.Tests
             //var barArray = (BarFlatClass[])fooArray;
 
             // But we still can
-            var barArray = MagicWand<FooDerivedClass[], BarFlatClass[]>.Cast(fooArray);
+            var barArray = VeryUnsafeCast<FooDerivedClass[], BarFlatClass[]>.Cast(fooArray);
 
             // Everything should still work.
             Assert.Equal(fooArray.Length, barArray.Length);
@@ -315,7 +314,7 @@ namespace Magicast.Tests
             //var barArray = (BarFlatClass[])fooArray;
 
             // But we still can
-            var barArray = MagicWand<List<FooDerivedClass>, List<BarFlatClass>>.Cast(fooArray);
+            var barArray = VeryUnsafeCast<List<FooDerivedClass>, List<BarFlatClass>>.Cast(fooArray);
 
             // Everything should still work.
             Assert.Equal(fooArray.Count, barArray.Count);
@@ -363,7 +362,7 @@ namespace Magicast.Tests
             };
 
             // But we still can
-            var barMap = MagicWand<Dictionary<string, FooDerivedClass>, Dictionary<string, BarFlatClass>>.Cast(fooMap);
+            var barMap = VeryUnsafeCast<Dictionary<string, FooDerivedClass>, Dictionary<string, BarFlatClass>>.Cast(fooMap);
 
             // Everything should still work.
             Assert.Equal(fooMap.Count, barMap.Count);
@@ -421,7 +420,7 @@ namespace Magicast.Tests
             // We can do better. In this case the enum IEnumerable *is* int IEnumerable.
             // This will work if the original array was made into IEnumerable with AsEnumerable();
             var enumEnum = enumArray.AsEnumerable();
-            IEnumerable<int> intEnum = MagicWand<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
+            IEnumerable<int> intEnum = VeryUnsafeCast<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
 
             Assert.Equal((int)enumEnum.Skip(0).First(), intEnum.Skip(0).First());
             Assert.Equal((int)enumEnum.Skip(1).First(), intEnum.Skip(1).First());
@@ -439,7 +438,7 @@ namespace Magicast.Tests
             //IEnumerable<int> intEnum = ((IEnumerable<int>)((IEnumerable)enumEnum));
 
             // OK at this point
-            IEnumerable<int> intEnum = MagicWand<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
+            IEnumerable<int> intEnum = VeryUnsafeCast<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
 
             // But using will blow up with EntryPointNotFoundException when trying to use it.
             try
@@ -523,7 +522,7 @@ namespace Magicast.Tests
                 fieldB = "fieldB"
             };
 
-            return MagicWand<FooClass, BarClass>.Cast(foo);
+            return VeryUnsafeCast<FooClass, BarClass>.Cast(foo);
         }
 
 

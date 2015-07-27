@@ -17,7 +17,7 @@ namespace Magicast
     /// for each combination of type parameters. This is the reason why we can generate the
     /// dynamic cast once in the static class constructor.
     /// </remarks>
-    internal static class MagicWand<TSource, TTarget>
+    internal static class VeryUnsafeCast<TSource, TTarget>
     {
         /// <summary>
         /// Dynamically generated delegate to cast from 
@@ -28,7 +28,7 @@ namespace Magicast
         /// <summary>
         /// Here we generate the dynamic delegate.
         /// </summary>
-        static MagicWand()
+        static VeryUnsafeCast()
         {
             castDelegate = CreateCastDelegate();
         }
@@ -77,7 +77,7 @@ namespace Magicast
 #else
             var isSourceClass = typeof(TSource).GetTypeInfo().IsClass;
             var isTargetClass = typeof(TTarget).GetTypeInfo().IsClass;
-            var assembly = typeof(MagicWand<TSource, TTarget>).GetTypeInfo().Assembly;
+            var assembly = typeof(VeryUnsafeCast<TSource, TTarget>).GetTypeInfo().Assembly;
 #endif
             // Both source and target need to be either class or struct.
             // Otherwise things will crash because the two things are not compatible in memory layout.
@@ -87,7 +87,11 @@ namespace Magicast
                 return ThrowFunc;
             }
 
-            var someMethod = new DynamicMethod(name: "MagicWand - CastToAnything", returnType: typeof(TTarget), parameterTypes: new Type[] { typeof(TSource) }, m: assembly.ManifestModule);
+            var someMethod = new DynamicMethod(
+                name: "VeryUnsafeCast - CastToAnything", 
+                returnType: typeof(TTarget), 
+                parameterTypes: new Type[] { typeof(TSource) }, 
+                m: assembly.ManifestModule);
 
             var il = someMethod.GetILGenerator();
             il.Emit(OpCodes.Ldarg_0); // Load arg_0 onto the stack (of type TSourceType)
