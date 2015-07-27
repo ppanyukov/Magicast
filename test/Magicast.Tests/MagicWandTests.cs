@@ -272,6 +272,74 @@ namespace Magicast.Tests
         }
 
 
+        //  GC-related assurance
+        [Fact]
+        public void Casts_SurviceGC()
+        {
+            // When we cast from A to B using our magic code, everyting still works for
+            // legitimate cases even after GC has kicked in and collected garbage.
+
+            // We will cast to this.
+            BarClass bar = GetBarClassFromFoo();
+
+            var collectionStats = GetGcCollectionStats();
+
+            // Allocate lots of stuff, hopefull induce GC to do whatever on its own.
+            for (var i = 0; i < 5000; i++)
+            {
+                var bytes = new byte[1024];
+                GC.AddMemoryPressure(64 * 1024);
+            }
+
+            for (var i = 0; i < 10; i++)
+            {
+                // Hope this works in all versions of .NET
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            var collectionStats2 = GetGcCollectionStats();
+
+            // Expect everything to be still there and no crashes.
+            Assert.Equal("fieldA", bar.fieldC);
+            Assert.Equal("fieldB", bar.fieldD);
+
+            // Also make sure that we did have collections everywhere.
+            for (int i = 0; i < collectionStats2.Length; i++)
+            {
+                var collections = collectionStats2[i] - collectionStats[i];
+                Console.WriteLine("Casts_SurviceGC: GC Collection in Gen {0}: {1}", i, collections);
+                Assert.True(collections > 0);
+            }
+        }
+
+        private static int[] GetGcCollectionStats()
+        {
+            var maxGeneration = GC.MaxGeneration;
+            var collections = new int[maxGeneration];
+            for (int i = 0; i < maxGeneration; i++)
+            {
+                collections[i] = GC.CollectionCount(i);
+            }
+
+            return collections;
+        }
+
+
+        private static BarClass GetBarClassFromFoo()
+        {
+            var foo = new FooClass
+            {
+                fieldA = "fieldA",
+                fieldB = "fieldB"
+            };
+
+            return MagicWand<FooClass, BarClass>.Cast(foo);
+        }
+
+
+
+
         // Types under test
 
         // Simple structs with same structure
