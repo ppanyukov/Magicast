@@ -77,6 +77,7 @@
       "dependencies": {
         "System.Runtime": "4.0.20-beta-*",
         "System.Console": "4.0.0-beta-*",
+        "System.Linq": "4.0.0-beta-*",
         "xunit": "2.1.0-beta3-*",
         "xunit.runner.dnx": "2.1.0-beta3-*"
       }

@@ -3,6 +3,8 @@
 namespace Magicast.Tests
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
     using Xunit;
 
@@ -205,6 +207,71 @@ namespace Magicast.Tests
             Assert.Equal(default(string), foo.fieldC);
         }
 
+
+        // Arrays and enumerables.
+        // Probably the coolest feature is you can cast arrays and IEnumerable<T> to anything too.
+        [Fact]
+        public void Array_CanCast_EnumArray_ToIntArray()
+        {
+            // This is a ligitimate use case where we have something like this:
+            //   Source: array of enum type
+            //   Target: array of int type
+            var enumArray = new FooEnumBasedOnInt[]
+            {
+                FooEnumBasedOnInt.ValueC, 
+                FooEnumBasedOnInt.ValueB,
+                FooEnumBasedOnInt.ValueA,
+            };
+
+            // This does not compile
+            //var intArray = (int[])enumArray;
+
+            // This will work, but:
+            //  - will convert the array to IEnumerable<T>, which is not the same as array
+            //  - will ultimately iterate over the arrray in order to cast
+            //  - in order to get back to array, need to invoke ToArray() which will copy the array.
+            //
+            //IEnumerable<int> intEnumerable = enumArray.Cast<int>();
+            //int[] intArray = enumArray.Cast<int>().ToArray();
+
+            // We can do better. In this case the enum array *is* int array.
+            int[] intArray = MagicWand<FooEnumBasedOnInt[], int[]>.Cast(enumArray);
+
+            Assert.Equal((int)enumArray[0], intArray[0]);
+            Assert.Equal((int)enumArray[1], intArray[1]);
+            Assert.Equal((int)enumArray[2], intArray[2]);
+        }
+
+        [Fact]
+        public void IEnumerable_CanCast_EnumEnumerable_ToIntEnumerable()
+        {
+            // This is a also a ligitimate use case where we have something like this:
+            //   Source: IEnumerable<enum>
+            //   Target: IEnumerable<int>
+            var enumEnum = new FooEnumBasedOnInt[]
+            {
+                FooEnumBasedOnInt.ValueC,
+                FooEnumBasedOnInt.ValueB,
+                FooEnumBasedOnInt.ValueA,
+            }.AsEnumerable();
+
+            // This does not compile
+            //var intArray = (IEnumerable<int>)enumEnum;
+
+            // This will work, but:
+            //  - will ultimately iterate over the source IEnumerable in order to cast
+            //
+            IEnumerable<int> intEnumerable = enumEnum.Cast<int>();
+
+            // We can do better. In this case the enum IEnumerable *is* int IEnumerable.
+            IEnumerable<int> intEnum = MagicWand<IEnumerable<FooEnumBasedOnInt>, IEnumerable<int>>.Cast(enumEnum);
+
+            Assert.Equal((int)enumEnum.Skip(0).First(),intEnum.Skip(0).First());
+            Assert.Equal((int)enumEnum.Skip(1).First(),intEnum.Skip(1).First());
+            Assert.Equal((int)enumEnum.Skip(2).First(),intEnum.Skip(2).First());
+        }
+
+
         // Types under test
 
         // Simple structs with same structure
@@ -301,6 +368,15 @@ namespace Magicast.Tests
         public class BarClassWithOneField
         {
             public string fieldA;
+        }
+
+
+        // Types for array tests
+        public enum FooEnumBasedOnInt : int
+        {
+            ValueA = 0,
+            ValueB = 1,
+            ValueC = 2,
         }
     }
 }
