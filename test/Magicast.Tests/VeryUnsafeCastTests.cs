@@ -13,11 +13,7 @@ namespace Magicast.Tests
         [Fact]
         public void StructToStruct_CanCast()
         {
-            var foo = new FooStruct
-            {
-                fieldA = "FooStruct.FieldA",
-                fieldB = "FooStruct.FieldB"
-            };
+            var foo = new FooStruct { fieldA = "FooStruct.FieldA", fieldB = "FooStruct.FieldB" };
 
             var bar = VeryUnsafeCast<FooStruct, BarStruct>.Cast(foo);
             Assert.Equal(bar.fieldC, foo.fieldA);
@@ -27,11 +23,7 @@ namespace Magicast.Tests
         [Fact]
         public void ClassToClass_CanCast()
         {
-            var foo = new FooClass
-            {
-                fieldA = "FooClass.fieldA",
-                fieldB = "FooClass.fieldB"
-            };
+            var foo = new FooClass { fieldA = "FooClass.fieldA", fieldB = "FooClass.fieldB" };
 
             var bar = VeryUnsafeCast<FooClass, BarClass>.Cast(foo);
             Assert.Equal(bar.fieldC, foo.fieldA);
@@ -45,11 +37,7 @@ namespace Magicast.Tests
             //
             // Structs and classes have different layout in memory.
             // So a naive cast will likely blow up. We don't allow this and throw.
-            var foo = new FooStruct
-            {
-                fieldA = "FooStruct.FieldA",
-                fieldB = "FooStruct.FieldB"
-            };
+            var foo = new FooStruct { fieldA = "FooStruct.FieldA", fieldB = "FooStruct.FieldB" };
 
             Assert.Throws<InvalidCastException>(() => VeryUnsafeCast<FooStruct, BarClass>.Cast(foo));
         }
@@ -59,11 +47,7 @@ namespace Magicast.Tests
         {
             // Structs and classes have different layout in memory.
             // So a naive cast will likely blow up. We don't allow this and throw.
-            var foo = new FooClass
-            {
-                fieldA = "FooClass.FieldA",
-                fieldB = "FooClass.FieldB"
-            };
+            var foo = new FooClass { fieldA = "FooClass.FieldA", fieldB = "FooClass.FieldB" };
 
             Assert.Throws<InvalidCastException>(() => VeryUnsafeCast<FooClass, BarStruct>.Cast(foo));
         }
@@ -82,7 +66,7 @@ namespace Magicast.Tests
         {
             // Casting from an interface is even more dangerous because we have no
             // clue what the source memroy layout is. Hence not allowed.
-            List<int> foo = new List<int>() {0, 1, 2, 3};
+            List<int> foo = new List<int>() { 0, 1, 2, 3 };
             var barIList = VeryUnsafeCast<List<int>, IList<int>>.Cast(foo);
             var barIEnumerable = VeryUnsafeCast<List<int>, IEnumerable<int>>.Cast(foo);
 
@@ -106,16 +90,7 @@ namespace Magicast.Tests
         [Fact]
         public void Interfaces_CanCast_FromIEnumerableDerived_ToIEnumerableBase()
         {
-            IEnumerable<FooDerivedClass> fooDerivedEnum = new List<FooDerivedClass>
-            {
-                new FooDerivedClass
-                {
-                    fieldBaseA = "a",
-                    fieldBaseB = "b",
-                    fieldDerivedA = "c",
-                    fieldDerivedB = "d"
-                }
-            };
+            IEnumerable<FooDerivedClass> fooDerivedEnum = new List<FooDerivedClass> { new FooDerivedClass { fieldBaseA = "a", fieldBaseB = "b", fieldDerivedA = "c", fieldDerivedB = "d" } };
 
             // This works
             IEnumerable<FooBaseClass> fooBaseEnum = fooDerivedEnum;
@@ -145,13 +120,7 @@ namespace Magicast.Tests
             //          fieldB
             //          fieldC
             //          fieldD
-            var fooDerived = new FooDerivedClass
-            {
-                fieldBaseA = "fieldBaseA",
-                fieldBaseB = "fieldBaseB",
-                fieldDerivedA = "fieldDerivedA",
-                fieldDerivedB = "fieldDerivedB"
-            };
+            var fooDerived = new FooDerivedClass { fieldBaseA = "fieldBaseA", fieldBaseB = "fieldBaseB", fieldDerivedA = "fieldDerivedA", fieldDerivedB = "fieldDerivedB" };
 
             var bar = VeryUnsafeCast<FooDerivedClass, BarFlatClass>.Cast(fooDerived);
             Assert.Equal(fooDerived.fieldBaseA, bar.fieldFlatA);
@@ -185,13 +154,7 @@ namespace Magicast.Tests
             //              fieldD
             //
 
-            var barFlat = new BarFlatClass
-            {
-                fieldFlatA = "fieldBaseA",
-                fieldFlatB = "fieldBaseB",
-                fieldFlatC = "fieldBaseC",
-                fieldFlatD = "fieldBaseD",
-            };
+            var barFlat = new BarFlatClass { fieldFlatA = "fieldBaseA", fieldFlatB = "fieldBaseB", fieldFlatC = "fieldBaseC", fieldFlatD = "fieldBaseD", };
 
             var fooHierarchy = VeryUnsafeCast<BarFlatClass, FooDerivedClass>.Cast(barFlat);
             Assert.Equal(barFlat.fieldFlatA, fooHierarchy.fieldBaseA);
@@ -208,10 +171,7 @@ namespace Magicast.Tests
             //
             // So for example, here we can change Cat into Dog :)
 
-            var cat = new Cat
-            {
-                name = "My fluffy Cat"
-            };
+            var cat = new Cat { name = "My fluffy Cat" };
 
             // Turn this cat into Dog as far as behaviour is concerned :)
             var dog = VeryUnsafeCast<Cat, Dog>.Cast(cat);
@@ -228,12 +188,7 @@ namespace Magicast.Tests
         {
             // The source and target types don't have to have eactly same number of fields.
             // For example here the target will have fewer fieds than the source and that's fine.
-            var foo = new FooClassWithThreeFields()
-            {
-                fieldA = "foo.FieldA",
-                fieldB = "foo.FieldA",
-                fieldC = "foo.FieldC",
-            };
+            var foo = new FooClassWithThreeFields() { fieldA = "foo.FieldA", fieldB = "foo.FieldA", fieldC = "foo.FieldC", };
 
             var bar = VeryUnsafeCast<FooClassWithThreeFields, BarClassWithOneField>.Cast(foo);
 
@@ -249,10 +204,7 @@ namespace Magicast.Tests
             // to access those extra fields -- those memory locations may not be there at all.
             //
             // TODO: Can we do anything to sanity check this in the MagicCast like we do with structs and classes?
-            var bar = new BarClassWithOneField
-            {
-                fieldA = "bar.fieldA"
-            };
+            var bar = new BarClassWithOneField { fieldA = "bar.fieldA" };
 
             var foo = VeryUnsafeCast<BarClassWithOneField, FooClassWithThreeFields>.Cast(bar);
 
@@ -273,12 +225,7 @@ namespace Magicast.Tests
             // This is a ligitimate use case where we have something like this:
             //   Source: array of enum type
             //   Target: array of int type
-            var enumArray = new FooEnumBasedOnInt[]
-            {
-                FooEnumBasedOnInt.ValueC, 
-                FooEnumBasedOnInt.ValueB,
-                FooEnumBasedOnInt.ValueA,
-            };
+            var enumArray = new FooEnumBasedOnInt[] { FooEnumBasedOnInt.ValueC, FooEnumBasedOnInt.ValueB, FooEnumBasedOnInt.ValueA, };
 
             // This does not compile
             //var intArray = (int[])enumArray;
@@ -306,20 +253,8 @@ namespace Magicast.Tests
             // Can do any array of objects into arary of other type as long as the two types are compatible.
             var fooArray = new FooDerivedClass[]
             {
-                new FooDerivedClass
-                {
-                    fieldBaseA = "0.fieldBaseA",
-                    fieldBaseB = "0.fieldBaseB",
-                    fieldDerivedA = "0.fieldDerivedA",
-                    fieldDerivedB = "0.fieldDerivedB",
-                },
-                new FooDerivedClass
-                {
-                    fieldBaseA = "1.fieldBaseA",
-                    fieldBaseB = "1.fieldBaseB",
-                    fieldDerivedA = "1.fieldDerivedA",
-                    fieldDerivedB = "1.fieldDerivedB",
-                },
+                new FooDerivedClass { fieldBaseA = "0.fieldBaseA", fieldBaseB = "0.fieldBaseB", fieldDerivedA = "0.fieldDerivedA", fieldDerivedB = "0.fieldDerivedB", },
+                new FooDerivedClass { fieldBaseA = "1.fieldBaseA", fieldBaseB = "1.fieldBaseB", fieldDerivedA = "1.fieldDerivedA", fieldDerivedB = "1.fieldDerivedB", },
             };
 
             // OK, this does not compile
@@ -350,20 +285,8 @@ namespace Magicast.Tests
 
             var fooArray = new List<FooDerivedClass>
             {
-                new FooDerivedClass
-                {
-                    fieldBaseA = "0.fieldBaseA",
-                    fieldBaseB = "0.fieldBaseB",
-                    fieldDerivedA = "0.fieldDerivedA",
-                    fieldDerivedB = "0.fieldDerivedB",
-                },
-                new FooDerivedClass
-                {
-                    fieldBaseA = "1.fieldBaseA",
-                    fieldBaseB = "1.fieldBaseB",
-                    fieldDerivedA = "1.fieldDerivedA",
-                    fieldDerivedB = "1.fieldDerivedB",
-                },
+                new FooDerivedClass { fieldBaseA = "0.fieldBaseA", fieldBaseB = "0.fieldBaseB", fieldDerivedA = "0.fieldDerivedA", fieldDerivedB = "0.fieldDerivedB", },
+                new FooDerivedClass { fieldBaseA = "1.fieldBaseA", fieldBaseB = "1.fieldBaseB", fieldDerivedA = "1.fieldDerivedA", fieldDerivedB = "1.fieldDerivedB", },
             };
 
             // OK, this does not compile
@@ -394,27 +317,8 @@ namespace Magicast.Tests
 
             var fooMap = new Dictionary<string, FooDerivedClass>
             {
-                {
-                    "key",
-                    new FooDerivedClass
-                    {
-                        fieldBaseA = "0.fieldBaseA",
-                        fieldBaseB = "0.fieldBaseB",
-                        fieldDerivedA = "0.fieldDerivedA",
-                        fieldDerivedB = "0.fieldDerivedB",
-                    }
-                },
-
-                {
-                    "key2",
-                    new FooDerivedClass
-                    {
-                        fieldBaseA = "1.fieldBaseA",
-                        fieldBaseB = "1.fieldBaseB",
-                        fieldDerivedA = "1.fieldDerivedA",
-                        fieldDerivedB = "1.fieldDerivedB",
-                    }
-                }
+                { "key", new FooDerivedClass { fieldBaseA = "0.fieldBaseA", fieldBaseB = "0.fieldBaseB", fieldDerivedA = "0.fieldDerivedA", fieldDerivedB = "0.fieldDerivedB", } },
+                { "key2", new FooDerivedClass { fieldBaseA = "1.fieldBaseA", fieldBaseB = "1.fieldBaseB", fieldDerivedA = "1.fieldDerivedA", fieldDerivedB = "1.fieldDerivedB", } }
             };
 
             // But we still can
@@ -435,13 +339,7 @@ namespace Magicast.Tests
             }
 
             // Add stuff to the new map
-            barMap.Add("key3", new BarFlatClass
-            {
-                fieldFlatA = "flatFieldA",
-                fieldFlatB = "flatFieldB",
-                fieldFlatC = "flatFieldC",
-                fieldFlatD = "flatFieldD"
-            });
+            barMap.Add("key3", new BarFlatClass { fieldFlatA = "flatFieldA", fieldFlatB = "flatFieldB", fieldFlatC = "flatFieldC", fieldFlatD = "flatFieldD" });
 
 
             // Use it from the old :)
@@ -480,11 +378,33 @@ namespace Magicast.Tests
             //   - target type needs to be a class
             //   - the first field in target needs to be of type object
             //   - here is the target type should have not more fields than there are elements in the array.
-            var array = new [] { 1, 2 };
+            var array = new[] { 1, 2 };
 
             var foo = VeryUnsafeCast<int[], FooWithArrayPad_Ints>.Cast(array);
             Assert.Equal(array[0], foo.fieldA);
             Assert.Equal(array[1], foo.fieldB);
+        }
+
+        [Fact]
+        public void AutoProps_CanCast_LikeAnyOtherObject()
+        {
+            // We don't need to have the source and target with fields.
+            // Auto props also work. Because they have backing fields.
+            // This is a cool use case when you can quickly turn internal
+            // mutable structures into public immutable structures.
+            // (with caveat that your users don't use Magicast of course :))
+
+            var foo = new FooWithReadWriteAutoPros
+            {
+                AutoPropA = "auto prop A",
+                AutoPropB = "auto prob B"
+            };
+
+            var bar = VeryUnsafeCast<FooWithReadWriteAutoPros, BarWithReadonlyAutoProps>.Cast(foo);
+
+            Assert.Equal(foo.AutoPropA, bar.AutoPropA);
+            Assert.Equal(foo.AutoPropB, bar.AutoPropB);
+
         }
 
         //  GC-related assurance
@@ -543,11 +463,7 @@ namespace Magicast.Tests
 
         private static BarClass GetBarClassFromFoo()
         {
-            var foo = new FooClass
-            {
-                fieldA = "fieldA",
-                fieldB = "fieldB"
-            };
+            var foo = new FooClass { fieldA = "fieldA", fieldB = "fieldB" };
 
             return VeryUnsafeCast<FooClass, BarClass>.Cast(foo);
         }
@@ -561,12 +477,14 @@ namespace Magicast.Tests
         public struct FooStruct
         {
             public string fieldA;
+
             public string fieldB;
         }
 
         public struct BarStruct
         {
             public string fieldC;
+
             public string fieldD;
         }
 
@@ -574,12 +492,14 @@ namespace Magicast.Tests
         public class FooClass
         {
             public string fieldA;
+
             public string fieldB;
         }
 
         public class BarClass
         {
             public string fieldC;
+
             public string fieldD;
         }
 
@@ -590,12 +510,14 @@ namespace Magicast.Tests
         public class FooBaseClass
         {
             public string fieldBaseA;
+
             public string fieldBaseB;
         }
 
         public class FooDerivedClass : FooBaseClass
         {
             public string fieldDerivedA;
+
             public string fieldDerivedB;
         }
 
@@ -603,8 +525,11 @@ namespace Magicast.Tests
         public class BarFlatClass
         {
             public string fieldFlatA;
+
             public string fieldFlatB;
+
             public string fieldFlatC;
+
             public string fieldFlatD;
         }
 
@@ -644,7 +569,9 @@ namespace Magicast.Tests
         public class FooClassWithThreeFields
         {
             public string fieldA;
+
             public string fieldB;
+
             public string fieldC;
         }
 
@@ -658,7 +585,9 @@ namespace Magicast.Tests
         public enum FooEnumBasedOnInt : int
         {
             ValueA = 0,
+
             ValueB = 1,
+
             ValueC = 2,
         }
 
@@ -666,17 +595,37 @@ namespace Magicast.Tests
         // Array view, need padding
         public class FooWithArrayPad_Ints
         {
-            private object pad;     // requires a padding of reference type.
+            private object pad; // requires a padding of reference type.
+
             public int fieldA;
+
             public int fieldB;
         }
 
         // Array view, need padding
         public class FooWithArrayPad_StringsAutoProps
         {
-            private object pad;     // requires a padding of reference type.
+            private object pad; // requires a padding of reference type.
+
+            public string AutoPropA { get; }
+
+            public string AutoPropB { get; }
+        }
+
+
+        // Types to test auto properties
+        public class FooWithReadWriteAutoPros
+        {
+            public string AutoPropA { get; set; }
+            public string AutoPropB { get; set; }
+        }
+
+        public class BarWithReadonlyAutoProps
+        {
+            // Readonly
             public string AutoPropA { get; }
             public string AutoPropB { get; }
         }
+
     }
 }
