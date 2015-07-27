@@ -451,6 +451,42 @@ namespace Magicast.Tests
             Assert.Equal(fooMap["key3"].fieldDerivedB, "flatFieldD");
         }
 
+        [Fact]
+        public void ArrayToClass_CanCast_ToMakeArrayAccessor_StringArray()
+        {
+            // We can cast an array to a class to assign the array elements
+            // to the fields and then access the array via those fieds
+            // instead of via the array.
+            //
+            // The keys to success: 
+            //   - target type needs to be a class
+            //   - the first field in target needs to be of type object
+            //   - here is the target type should have not more fields than there are elements in the array.
+            var array = new[] { "value1", "value2", "value3", "value4" };
+
+            var foo = VeryUnsafeCast<string[], FooWithArrayPad_StringsAutoProps>.Cast(array);
+            Assert.Equal(array[0], foo.AutoPropA);
+            Assert.Equal(array[1], foo.AutoPropB);
+        }
+
+        [Fact]
+        public void ArrayToClass_CanCast_ToMakeArrayAccessor_IntArray()
+        {
+            // We can cast an array to a class to assign the array elements
+            // to the fields and then access the array via those fieds
+            // instead of via the array.
+            //
+            // The keys to success: 
+            //   - target type needs to be a class
+            //   - the first field in target needs to be of type object
+            //   - here is the target type should have not more fields than there are elements in the array.
+            var array = new [] { 1, 2 };
+
+            var foo = VeryUnsafeCast<int[], FooWithArrayPad_Ints>.Cast(array);
+            Assert.Equal(array[0], foo.fieldA);
+            Assert.Equal(array[1], foo.fieldB);
+        }
+
         //  GC-related assurance
         [Fact]
         public void GC_Casts_SurviceGC()
@@ -624,6 +660,23 @@ namespace Magicast.Tests
             ValueA = 0,
             ValueB = 1,
             ValueC = 2,
+        }
+
+
+        // Array view, need padding
+        public class FooWithArrayPad_Ints
+        {
+            private object pad;     // requires a padding of reference type.
+            public int fieldA;
+            public int fieldB;
+        }
+
+        // Array view, need padding
+        public class FooWithArrayPad_StringsAutoProps
+        {
+            private object pad;     // requires a padding of reference type.
+            public string AutoPropA { get; }
+            public string AutoPropB { get; }
         }
     }
 }
