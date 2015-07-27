@@ -8,62 +8,43 @@ namespace Magicast
     using System.Runtime.CompilerServices;
 
     /// <summary>
-    /// The magic cast code here. Emit clever bit of IL to cast stuff from any type to any.
+    /// Casts from anything to anything in a VERY DANGEROUS (but fun) way. Use responsibly.
     /// </summary>
     /// <typeparam name="TSource">The type to cast from.</typeparam>
     /// <typeparam name="TTarget">The type to cast to.</typeparam>
-    /// <remarks>
-    /// Note on static members. Because this is a generic, the static members will be generated
-    /// for each combination of type parameters. This is the reason why we can generate the
-    /// dynamic cast once in the static class constructor.
-    /// </remarks>
     internal static class VeryUnsafeCast<TSource, TTarget>
     {
-        /// <summary>
-        /// Dynamically generated delegate to cast from 
-        /// <typeparamref name="TSource"/> to <typeparamref name="TTarget"/>.
-        /// </summary>
+        // Note on static members. Because this is a generic, the static members will be generated
+        // for each combination of type parameters. This is the reason why we can generate the
+        // dynamic cast delegate once in the static class constructor.
+        
         private static readonly Func<TSource, TTarget> castDelegate;
 
-        /// <summary>
-        /// Here we generate the dynamic delegate.
-        /// </summary>
         static VeryUnsafeCast()
         {
             castDelegate = CreateCastDelegate();
         }
 
         /// <summary>
-        /// Magically casts any source type <typeparamref name="TSource"/> 
-        /// to target type <typeparamref name="TTarget"/>.
-        /// It's magic! :)
+        /// Magically but VERY DANGEROUSLY casts any source type <typeparamref name="TSource"/> 
+        /// to target type <typeparamref name="TTarget"/>. Use responsibly.
         /// </summary>
         /// <param name="obj">
-        /// The object of type <typeparamref name="TSource"/> to cast to 
-        /// target type <typeparamref name="TTarget"/>.
+        /// The object of type <typeparamref name="TSource"/> to cast from.
         /// </param>
         /// <returns>
         /// An object of type <typeparamref name="TTarget"/>.
         /// </returns>
-#if !NET40
-        // Stragely this attribute is not available in .NET 4.0 but available everywhere else!
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public static TTarget Cast(TSource obj)
         {
             return castDelegate(obj);
         }
 
         /// <summary>
-        /// Generates dynamic method using IL emit.
+        /// Generates dynamic method to cast from source to target using IL emit.
         /// </summary>
-        /// <returns>
-        /// Delegate which actually casts object of type <typeparamref name="TSource"/> 
-        /// to type <typeparamref name="TTarget"/>
-        /// </returns>
         private static Func<TSource, TTarget> CreateCastDelegate()
         {
-
             //
             // dnxcore50:
             //      Need System.Reflection for Type.GetTypeInfo.
@@ -102,7 +83,9 @@ namespace Magicast
 
         private static TTarget ThrowFunc(TSource obj)
         {
-            throw new InvalidOperationException("Even though it's magic, we can't cast structs to classes and classes to structs. Because things will really crash if you do.");
+            throw new InvalidOperationException(
+                "Even though it's magic, we can't cast structs to classes and classes to structs. " +
+                "Because things will really crash if you do.");
         }
     }
 }
