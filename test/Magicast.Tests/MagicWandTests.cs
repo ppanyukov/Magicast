@@ -272,6 +272,51 @@ namespace Magicast.Tests
         }
 
 
+        [Fact]
+        public void Array_CanCast_ClassArray_TAnotherClassArray()
+        {
+            // Frequent scenario:
+            // Have array of DerivedClass[], but want to have arrays of BaseClass[]
+
+            var fooArray = new FooDerivedClass[]
+            {
+                new FooDerivedClass
+                {
+                    fieldBaseA = "0.fieldBaseA",
+                    fieldBaseB = "0.fieldBaseB",
+                    fieldDerivedA = "0.fieldDerivedA",
+                    fieldDerivedB = "0.fieldDerivedB",
+                },
+                new FooDerivedClass
+                {
+                    fieldBaseA = "1.fieldBaseA",
+                    fieldBaseB = "1.fieldBaseB",
+                    fieldDerivedA = "1.fieldDerivedA",
+                    fieldDerivedB = "1.fieldDerivedB",
+                },
+            };
+
+            // OK, this does not compile
+            //var barArray = (BarFlatClass[])fooArray;
+
+            // But we still can
+            var barArray = MagicWand<FooDerivedClass[], BarFlatClass[]>.Cast(fooArray);
+
+            // Everything should still work.
+            Assert.Equal(fooArray.Length, barArray.Length);
+
+            for (int i = 0; i < fooArray.Length; i++)
+            {
+                var foo = fooArray[i];
+                var bar = barArray[i];
+
+                Assert.Equal(foo.fieldBaseA, bar.fieldFlatA);
+                Assert.Equal(foo.fieldBaseB, bar.fieldFlatB);
+                Assert.Equal(foo.fieldDerivedA, bar.fieldFlatC);
+                Assert.Equal(foo.fieldDerivedB, bar.fieldFlatD);
+            }
+        }
+
         //  GC-related assurance
         [Fact]
         public void Casts_SurviceGC()
