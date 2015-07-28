@@ -151,22 +151,83 @@ Basically if you can cast using regular means of C#, our dodgy cast will also wo
 A bunch of use cases, to give idea where and how this may be useful.
 
 
-### Arrays of Enums
+### Generic classes with enums
 
-What a pain the `enums` are in C# when you need to convert to/from int and are dealing with arrays of them.
+One massive pain in C#/.NET is you can't have generics for enums.
 
-*(aside: this is where Magicast originally came from: enums and arrays of such)*
+*(aside: this is where Magicast originally came from: generics, enums and arrays of such)*
 
-Use Magicast to convert arrays of enums to arrays of ints at zero cost.
+So this doesn't compile:
 
-This is probably quite a legitimate case for it.
+	public class Foo<T> where T:enum	// Nope
+	{
+	}
 
 
-	public enum FooEnum {one, two};
+One way to try solve this is to try to use `T` as `int`. Unfortunately this doesn't work well either
 
-	var enumArray = new Foo[]{FooEnum.one, FooEnum.two};
-	var intArray = VeryUnsafeCast<FooEnum[], int[]>.Cast(enumArray);
+	public class BadFoo<T> where T:struct			// OK
+	{
+		public int CastToInt(T value)
+		{
+			// naive approach
+			return (int)value;						// Nope: error CS0030: Cannot convert type 'T' to 'int'
 
+			// go via object works but involves boxing
+			var obj = (object)value;				// boxing!
+			return (int)obj;
+		}
+
+		// even worse for arrays
+		public int[] CastToIntArray(T[] values)
+		{
+			return (int[])values;					// obviously doesn't compile
+
+			// same trick to go via object? Nope, doesn't work!
+			object[] objects = (object[])values;	// does not compile
+			return (int[])objects;					// does not compile either
+
+			// OK, need to do a loop then!
+			// Great performance guaranteed. Not.
+			var result = new int[values.Length];
+			for (int i = 0; i < values.Length; i++)
+			{
+				// result[i] = (int)values[i];		// damn, this doesn't compile again!
+			
+				// use the same trick to go via object
+				// but boxing!
+				object obj = (object)values[i];		// boxing
+				result[i] = (int)obj;
+			}
+		
+			return result;
+
+
+
+			// But, who writes for loops these days? Everybody's using Linq!
+			// ... and your performance has just gone out of the window.
+			return values.Cast<object>().Cast<int>().ToArray();
+		}
+	}
+
+Writing code like above sucks big time, especially that we *know* that enums are ints! So why go via this crazy path?
+
+Use Magicast to do better.
+
+	use Magicast;
+
+	public class GoodFoo<T> where T:struct						// OK, let it be struct
+	{
+		public int CastToInt(T value)
+		{
+			return VeryUnsafeCast<T, int>.Cast(value);			// works, no boxing
+		}
+
+		public int[] CastToIntArray(T[] values)
+		{
+			return VeryUnsafeCast<T[], int[]>.Cast(values);		// also works, no loops, no boxing
+		}
+	}
 
 ### Accessing and changing private fields without reflection
 
