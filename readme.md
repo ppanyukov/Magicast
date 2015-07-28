@@ -78,73 +78,7 @@ All you need to do is this:
 	// Cast anything to anything
 	var result = VeryUnsafeCast<FromType, ToType>.Cast(object_to_cast);
 
-**Main Rule -- it's all about fields and memory layout**
-
-Magicast works by giving you a view of the memory allocated by source type and allows you to
-see it via another type. It's like in C:
-
-	// Some dodgy C code
-	void* memory = malloc(1024);  // allocate 1K RAM
-	Foo* foo = (Foo*)memory;      // treat it like Foo
-	Bar* bar = (Bar*)foo;         // treat it like Bar now
-
-The main rule to remember is you are doing essentially something like above when you use Magicast
-but in the .NET world.
-
-And in .NET world when we talk about memory of an object, we are talking about the *fields*
-in the object. Certainly not methods.
-
-*Remember: make sure the source and target types are compatible in field layout!*
-
-
-
-**Quick Rules -- what you can cast**
-
-There is support for the following:
-
-- Value type to Value type
-
-	- struct to struct
-	- primitive to primitive
-	- enums
-
-- Class to Class
-
-	- any concrete class to another concrete class (reference types)
-
-- Collections of the above
-	- arrays
-	- lists
-	- sets
-	- (but not IEnumerable!)
-
-- Anything else
-
-	- any source type which .NET thinks is directly assignable to the target type
-
-
-
-**Quick Rules -- what you *cannot* cast**
-
-Unless the source type is directly assignable to the target type, we do not allow the following casts:
-
-These will always fail:
-
-- struct to class (really bad things happen if you do)
-- class to struct (equally bad things happen)
-
-
-These will sometimes work:
-
-- from interfaces to anything (this is truly scary)
-- to interfaces (this doesn't lead to any working results)
-
-The interfaces will work *only* if the source type is assignable to the target in .NET world.
-Basically if you can cast using regular means of C#, our dodgy cast will also work.
-
-
-
-----
+----------
 
 ## Use cases and examples
 
@@ -424,6 +358,76 @@ REALLY old things:
 
 At the moment I've done limited testing on `dnxcore50` and `dnx451`. But definitely going to run
 more thorough tests soon.
+
+
+## Finally - some rules
+
+(yes, there are some)
+
+**Main Rule -- it's all about fields and memory layout**
+
+Magicast works by giving you a view of the memory allocated by source type and allows you to
+see it via another type. It's like in C:
+
+	// Some dodgy C code
+	void* memory = malloc(1024);  // allocate 1K RAM
+	Foo* foo = (Foo*)memory;      // treat it like Foo
+	Bar* bar = (Bar*)foo;         // treat it like Bar now
+
+The main rule to remember is you are doing essentially something like above when you use Magicast
+but in the .NET world.
+
+And in .NET world when we talk about memory of an object, we are talking about the *fields*
+in the object. Certainly not methods.
+
+*Remember: make sure the source and target types are compatible in field layout!*
+
+
+
+**Quick Rules -- what you can cast**
+
+There is support for the following:
+
+- Value type to Value type
+
+	- struct to struct
+	- primitive to primitive
+	- enums
+
+- Class to Class
+
+	- any concrete class to another concrete class (reference types)
+
+- Collections of the above
+	- arrays
+	- lists
+	- sets
+	- (but not IEnumerable!)
+
+- Anything else
+
+	- any source type which .NET thinks is directly assignable to the target type
+
+
+
+**Quick Rules -- what you *cannot* cast**
+
+Unless the source type is directly assignable to the target type, we do not allow the following casts:
+
+These will always fail:
+
+- struct to class (really bad things happen if you do)
+- class to struct (equally bad things happen)
+
+
+These will sometimes work:
+
+- from interfaces to anything (this is truly scary)
+- to interfaces (this doesn't lead to any working results)
+
+The interfaces will work *only* if the source type is assignable to the target in .NET world.
+Basically if you can cast using regular means of C#, our dodgy cast will also work.
+
 
 
 
