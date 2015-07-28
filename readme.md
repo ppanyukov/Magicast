@@ -16,47 +16,53 @@ But there are some very useful applications. See further.*
 
 For example, you can't do this in C#:
 
-	class Foo
-	{
-	  public string field1;
-	  public string field2;
-	}
+```cs
+class Foo
+{
+	public string field1;
+	public string field2;
+}
 
-	class Bar
-	{
-	  public string field1;
-	  public string field2;
-	}
+class Bar
+{
+	public string field1;
+	public string field2;
+}
 
-	var foo = new Foo();
-	var bar = (Bar)foo;      // does not compile, obviously
+var foo = new Foo();
+var bar = (Bar)foo;      // does not compile, obviously
+```
 
 But why? The structure is identical right?
 
 Equally, you can't do this either:
 
-	public enum Foo : int
-	{
-	  one,
-	  two,
-	  three,
-	}
+```cs
+public enum Foo : int
+{
+	one,
+	two,
+	three,
+}
 
-	var enumArray = new Foo[]{Foo.one, Foo.two, Foo.three};
-	var intArray = (int[])enumArray;   // does not compile either
+var enumArray = new Foo[]{Foo.one, Foo.two, Foo.three};
+var intArray = (int[])enumArray;   // does not compile either
+```
 
 But why is that the case? Surely, the enumArray *is* an int array under the hood, right?
 
 
 And you can't do this either:
 
-	pubic class Foo
-	{
-	  private string fieldA;
-	}
+```cs
+pubic class Foo
+{
+	private string fieldA;
+}
 
-	var foo = new Foo();
-	var field = foo.fieldA;  // private field, no can do
+var foo = new Foo();
+var field = foo.fieldA;  // private field, no can do
+```
 
 That is plain nasty! Got to do all sort of reflection and stuff.
 
@@ -72,11 +78,13 @@ NOTE: There can be some very legitimate and also interesting applications of thi
 
 All you need to do is this:
 
-	// C#
-	using Magicast;
+```cs
+// C#
+using Magicast;
 
-	// Cast anything to anything
-	var result = VeryUnsafeCast<FromType, ToType>.Cast(object_to_cast);
+// Cast anything to anything
+var result = VeryUnsafeCast<FromType, ToType>.Cast(object_to_cast);
+```
 
 ----------
 
@@ -93,75 +101,80 @@ One massive pain in C#/.NET is you can't have generics for enums.
 
 So this doesn't compile:
 
-	public class Foo<T> where T:enum	// Nope
-	{
-	}
-
+```cs
+public class Foo<T> where T:enum	// Nope
+{
+}
+```
 
 One way to try solve this is to try to use `T` as `int`. Unfortunately this doesn't work well either
 
-	public class BadFoo<T> where T:struct			// OK
+```cs
+public class BadFoo<T> where T:struct			// OK
+{
+	public int CastToInt(T value)
 	{
-		public int CastToInt(T value)
-		{
-			// naive approach
-			return (int)value;						// Nope: error CS0030: Cannot convert type 'T' to 'int'
+		// naive approach
+		return (int)value;						// Nope: error CS0030: Cannot convert type 'T' to 'int'
 
-			// go via object works but involves boxing
-			var obj = (object)value;				// boxing!
-			return (int)obj;
-		}
-
-		// even worse for arrays
-		public int[] CastToIntArray(T[] values)
-		{
-			return (int[])values;					// obviously doesn't compile
-
-			// same trick to go via object? Nope, doesn't work!
-			object[] objects = (object[])values;	// does not compile
-			return (int[])objects;					// does not compile either
-
-			// OK, need to do a loop then!
-			// Great performance guaranteed. Not.
-			var result = new int[values.Length];
-			for (int i = 0; i < values.Length; i++)
-			{
-				// result[i] = (int)values[i];		// damn, this doesn't compile again!
-			
-				// use the same trick to go via object
-				// but boxing!
-				object obj = (object)values[i];		// boxing
-				result[i] = (int)obj;
-			}
-		
-			return result;
-
-
-
-			// But, who writes for loops these days? Everybody's using Linq!
-			// ... and your performance has just gone out of the window.
-			return values.Cast<object>().Cast<int>().ToArray();
-		}
+		// go via object works but involves boxing
+		var obj = (object)value;				// boxing!
+		return (int)obj;
 	}
+
+	// even worse for arrays
+	public int[] CastToIntArray(T[] values)
+	{
+		return (int[])values;					// obviously doesn't compile
+
+		// same trick to go via object? Nope, doesn't work!
+		object[] objects = (object[])values;	// does not compile
+		return (int[])objects;					// does not compile either
+
+		// OK, need to do a loop then!
+		// Great performance guaranteed. Not.
+		var result = new int[values.Length];
+		for (int i = 0; i < values.Length; i++)
+		{
+			// result[i] = (int)values[i];		// damn, this doesn't compile again!
+			
+			// use the same trick to go via object
+			// but boxing!
+			object obj = (object)values[i];		// boxing
+			result[i] = (int)obj;
+		}
+		
+		return result;
+
+
+
+		// But, who writes for loops these days? Everybody's using Linq!
+		// ... and your performance has just gone out of the window.
+		return values.Cast<object>().Cast<int>().ToArray();
+	}
+}
+```
 
 Writing code like above sucks big time, especially that we *know* that enums are ints! So why go via this crazy path?
 
 Use Magicast to do better.
 
-	use Magicast;
+```cs
+use Magicast;
 
-	public class GoodFoo<T> where T:struct						// OK, let it be struct
+public class GoodFoo<T> where T:struct						// OK, let it be struct
+{
+	public int CastToInt(T value)
 	{
-		public int CastToInt(T value)
-		{
-			return VeryUnsafeCast<T, int>.Cast(value);			// works, no boxing
-		}
-
-		public int[] CastToIntArray(T[] values)
-		{
-			return VeryUnsafeCast<T[], int[]>.Cast(values);		// also works, no loops, no boxing
-		}
+		return VeryUnsafeCast<T, int>.Cast(value);			// works, no boxing
 	}
+
+	public int[] CastToIntArray(T[] values)
+	{
+		return VeryUnsafeCast<T[], int[]>.Cast(values);		// also works, no loops, no boxing
+	}
+}
+```
 
 ### Accessing and changing private fields without reflection
 
@@ -170,24 +183,25 @@ Might be very handy for testing, when you want to check the value of a private f
 
 Probably another legitimate case for it.
 
-	public class Foo
-	{
-		private string fieldA;
-	}
+```cs
+public class Foo
+{
+	private string fieldA;
+}
 
-	// Declare a type with same fields as Foo and make fields public
-	public class Bar
-	{
-		public string fieldA;
-	}
+// Declare a type with same fields as Foo and make fields public
+public class Bar
+{
+	public string fieldA;
+}
 
-	// Magicast
-	var foo = new Foo();
-	var bar = VeryUnsafeCast<Foo, Bar>(foo);
+// Magicast
+var foo = new Foo();
+var bar = VeryUnsafeCast<Foo, Bar>(foo);
 
-	// Get to those fields!
-	bar.fieldA = "hello!";
-
+// Get to those fields!
+bar.fieldA = "hello!";
+```
 
 
 ### Automap arrays to objects
@@ -198,26 +212,27 @@ is involved, copying of memory and other laborious things.
 
 You can skip all that 
 
-	var array = new string[]{"one", "two", "three"};
+```cs
+var array = new string[]{"one", "two", "three"};
 
-	// Declare a type with fields like this:
-	class ArrayView
-	{
-		private object padding;  // required
+// Declare a type with fields like this:
+class ArrayView
+{
+	private object padding;  // required
 
-		// Yep, it even works with auto properties
-		// Yep, even with read-only properties
-		public string ElementZero {get;}
-		public string ElementOne {get;}
-	}
+	// Yep, it even works with auto properties
+	// Yep, even with read-only properties
+	public string ElementZero {get;}
+	public string ElementOne {get;}
+}
 
-	// Magicast
-	var view = VeryUnsafeCast<string[], ArrayView>()
+// Magicast
+var view = VeryUnsafeCast<string[], ArrayView>()
 
-	// Access them array elements!
-	var s0 = view.ElementZero;		// equivalent of array[0]
-	var s1 = view.ElementZero;		// equivalent of array[1]
-
+// Access them array elements!
+var s0 = view.ElementZero;		// equivalent of array[0]
+var s1 = view.ElementZero;		// equivalent of array[1]
+```
 
 
 ### Turn objects with get/set auto-properties to immutable objects like a ninja
@@ -234,40 +249,41 @@ This is probably one of the ligitimate uses.
 
 How to do it:
 
-	// Declare two types with same propeties: 
-	//	- one for internal use with get/set properties
-	//  - one for public use, just with get properties
+```cs
+// Declare two types with same propeties: 
+//	- one for internal use with get/set properties
+//  - one for public use, just with get properties
 
-	internal class FooInternal
+internal class FooInternal
+{
+	public string AutoPropA {get; set;}
+	public string AutoPropB {get; set;}
+}
+
+public class FooPublic
+{
+	public string AutoPropA {get;}
+	public string AutoPropB {get;}
+}
+
+
+// Implement your method like this.
+public FooPublic SomeMethod()
+{
+	// Use FooInternal to build the object.
+	// Use Magicast to turn it into immutable version when you are done.
+
+	var foo = new FooInternal
 	{
-		public string AutoPropA {get; set;}
-		public string AutoPropB {get; set;}
-	}
+		AutoPropA = "some value",
+		AutoPropB = "some other value",
+	};
 
-	public class FooPublic
-	{
-		public string AutoPropA {get;}
-		public string AutoPropB {get;}
-	}
+	var immutable = VeryUnsafeCast<FooInternal, FooPublic>.Cast(foo);
 
-
-	// Implement your method like this.
-	public FooPublic SomeMethod()
-	{
-		// Use FooInternal to build the object.
-		// Use Magicast to turn it into immutable version when you are done.
-
-		var foo = new FooInternal
-		{
-			AutoPropA = "some value",
-			AutoPropB = "some other value",
-		};
-
-		var immutable = VeryUnsafeCast<FooInternal, FooPublic>.Cast(foo);
-
-		return immutable;
-	}
-
+	return immutable;
+}
+```
 
 ### Change the meaning of 'polymorphism'
 
@@ -275,36 +291,37 @@ Turn cats into dogs and persons into cats!
 
 OK, this one is a bit silly.
 
-	public class Cat
-	{
-		public string name; 
+```cs
+public class Cat
+{
+	public string name; 
 
-		public string SaySomethingLikeACat()
-		{
-			return "Meaeoew" + this.name;
-		}
+	public string SaySomethingLikeACat()
+	{
+		return "Meaeoew" + this.name;
 	}
+}
 
-	public class Dog
+public class Dog
+{
+	public string name;
+
+	public string SaySomethingLikeADog()
 	{
-		public string name;
-
-		public string SaySomethingLikeADog()
-		{
-			return "Woof Woof " + this.name;
-		}
+		return "Woof Woof " + this.name;
 	}
+}
 
-	var cat = new Cat
-	{
-		name = "fluffy cat"
-	};
+var cat = new Cat
+{
+	name = "fluffy cat"
+};
 
-	var dog = VeryUnsafeCast<Cat, Dog>.Cast(cat);
+var dog = VeryUnsafeCast<Cat, Dog>.Cast(cat);
 
-	cat.SaySomethingLikeACat(); // --> Meaeoew fuluffy cat
-	dog.SaySomethingLikeADog(); // --> Woof Woof fluffy cat
-
+cat.SaySomethingLikeACat(); // --> Meaeoew fuluffy cat
+dog.SaySomethingLikeADog(); // --> Woof Woof fluffy cat
+```
 
 
 ### All of the above but with arrays, lists etc
@@ -313,20 +330,21 @@ All these casts sould work just fine with collection of objects: arrays, lists e
 
 So for example:
 
-	// Arrays -- should just work
-	var arrayOfFoo = new Foo[]{....};
-	var arrayOfBar = VeryUnsafeCast<Foo[], Bar[]>.Cast(arrayOfFoo);
+```cs
+// Arrays -- should just work
+var arrayOfFoo = new Foo[]{....};
+var arrayOfBar = VeryUnsafeCast<Foo[], Bar[]>.Cast(arrayOfFoo);
 
 
-	// List -- should also work
-	var listOfFoo = new List<Foo>{....};
-	var listOfBar = VeryUnsafeCast<List<Foo>, List<Bar>>.Cast(listOfFoo);
+// List -- should also work
+var listOfFoo = new List<Foo>{....};
+var listOfBar = VeryUnsafeCast<List<Foo>, List<Bar>>.Cast(listOfFoo);
 
 
-	// Dictionary -- change of value types
-	var mapOfStringToFoo = new Dictionary<string, Foo>{....};
-	vaf mapOfStringToBar = VeryUnsafeCast<Dictionary<string, Foo>, Dictionary<string, Bar>>.Cast(mapOfStringToFoo);
-
+// Dictionary -- change of value types
+var mapOfStringToFoo = new Dictionary<string, Foo>{....};
+vaf mapOfStringToBar = VeryUnsafeCast<Dictionary<string, Foo>, Dictionary<string, Bar>>.Cast(mapOfStringToFoo);
+```
 
 
 
@@ -369,10 +387,12 @@ more thorough tests soon.
 Magicast works by giving you a view of the memory allocated by source type and allows you to
 see it via another type. It's like in C:
 
+```c
 	// Some dodgy C code
 	void* memory = malloc(1024);  // allocate 1K RAM
 	Foo* foo = (Foo*)memory;      // treat it like Foo
 	Bar* bar = (Bar*)foo;         // treat it like Bar now
+```
 
 The main rule to remember is you are doing essentially something like above when you use Magicast
 but in the .NET world.
